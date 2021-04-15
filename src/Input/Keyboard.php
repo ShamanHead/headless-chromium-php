@@ -42,28 +42,21 @@ class Keyboard
      * @throws \HeadlessChromium\Exception\NoResponseAvailable
      */
     public function typeText(string $text)
-    {
-        $this->page->assertNotClosed();
+     {
+         $this->page->assertNotClosed();
 
-        $length = strlen($text);
+         // apparently the first character doesn't work
+         $this->page->getSession()->sendMessageSync(new Message('Input.dispatchKeyEvent', [
+             'type' => 'char',
+             'text' => '',
+         ]));
 
-        // apparently the first character doesn't work
-        $this->page->getSession()->sendMessageSync(new Message('Input.dispatchKeyEvent', [
-            'type' => 'char',
-            'text' => '',
-        ]));
+         $this->page->getSession()->sendMessageSync(new Message('Input.insertText', [
+             'text' => $text,
+         ]));
 
-        for ($i = 0; $i < $length; $i++) {
-            $this->page->getSession()->sendMessageSync(new Message('Input.dispatchKeyEvent', [
-                'type' => 'char',
-                'text' => $text[$i],
-            ]));
-
-            usleep($this->sleep);
-        }
-
-        return $this;
-    }
+         return $this;
+     }
 
     /**
      * Type a single raw key wich rawKeyDown
